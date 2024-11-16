@@ -82,7 +82,17 @@
   function mousePressed() {
     // Check if the train image is clicked
     if (mouseX > 400 && mouseX < 600 && mouseY > 400 && mouseY < 500) {
-      clickedMessage = "You clicked on the train!";
+      clickedMessage = "You clicked on the train! Choose an action: +1 Score or +5 Score";
+      let choice = prompt("Type '1' to add 1 point or '5' to add 5 points to your score:");
+      if (choice === '1') {
+        score += 1;
+        clickedMessage = "You chose to add 1 point!";
+      } else if (choice === '5') {
+        score += 5;
+        clickedMessage = "You chose to add 5 points!";
+      } else {
+        clickedMessage = "No valid choice made.";
+      }
     } else {
       clickedMessage = "";
     }
