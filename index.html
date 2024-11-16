@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Derailing Train Game Debug</title>
+    <title>Derailing Train Game with Interactions</title>
     <style>
         body {
             display: flex;
@@ -13,15 +13,43 @@
             margin: 0;
             background-color: #f0f0f0;
         }
+        .button-container {
+            position: absolute;
+            top: 650px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
 </head>
 <body>
+    <div id="buttonContainer" class="button-container"></div>
     <script>
         let trainImage;
+        let highScore = 0;
+        let score = 0;
         let showChoices = false;
         let message = '';
         let options = [];
+        let gameEnded = false;
+        let gamePrompt = "Stare onward and look at that view, take it all in and stare further into the distance, onto the other side of the horizon—yeah, right over there. Do you see it? The emergency brake of that metro car has been tampered with beyond function and it is derailing as we are forced to catch its spectacle. Here, you could stay in the viscid; there, you plummet into chaos.";
+        let gameOverPrompt = "To believe in non-association is the coping mechanism, forevermore, as the bodies pile atop one another, and a quick glance begs questions of the perpetrator.";
 
         function preload() {
             trainImage = loadImage('train1.png', 
@@ -32,23 +60,31 @@
 
         function setup() {
             let canvas = createCanvas(1000, 1000);
-            canvas.parent(document.body); // Append canvas directly to the body
+            canvas.parent(document.body); // Append canvas directly to the body for better positioning.
             noLoop(); // No continuous draw loop; redraw only when needed
         }
 
         function draw() {
+            if (gameEnded) {
+                displayEndScreen();
+                return;
+            }
+
             background(220);
             if (trainImage) {
                 image(trainImage, 400, 400, 200, 100);
             }
 
-            // Draw an interactive area around the train image for debugging purposes
-            if (showChoices) {
-                fill(255, 0, 0, 150);
-                rect(400, 400, 200, 100);
-            }
+            fill(0);
+            textSize(32);
+            text(`Score: ${score}`, 20, 40);
+            text(`High Score: ${highScore} - How many times have you saved this train?`, 20, 80);
 
-            // Display interaction message if set
+            fill(50);
+            textSize(20);
+            textAlign(LEFT, TOP);
+            text(gamePrompt, 20, 120, 960);
+
             if (message) {
                 fill(50, 50, 50, 200);
                 noStroke();
@@ -58,22 +94,93 @@
                 textAlign(LEFT, TOP);
                 text(message, 40, 40, width - 80);
             }
+
+            if (showChoices) {
+                displayButtons();
+            }
+
+            // Draw other interactive areas
+            fill(0, 255, 0, 150);
+            rect(200, 700, 150, 100); // Interactive zone for 'Green Area'
+            fill(0, 0, 255, 150);
+            rect(700, 700, 150, 100); // Interactive zone for 'Blue Area'
         }
 
         function mousePressed() {
-            // Debugging: Log mouse positions to see if clicks are being recognized
-            console.log(`Mouse pressed at (${mouseX}, ${mouseY})`);
+            if (gameEnded) {
+                return;
+            }
 
-            // Check if the mouse is clicking on the train image
+            let interacted = false;
+
+            // Check if the train image is clicked
             if (mouseX > 400 && mouseX < 600 && mouseY > 400 && mouseY < 500) {
                 message = "You clicked on the train! Will you save it or let it derail?";
-                showChoices = true; // Highlight the interactive area
+                options = [
+                    { text: 'Save the Train (+1 Score)', action: () => { adjustScore(1); highScore++; resetGame(); } },
+                    { text: 'Let it Derail (+5 Score)', action: () => { adjustScore(5); resetGame(); } }
+                ];
+                interacted = true;
+                showChoices = true;
                 redraw();
-            } else {
-                message = "";
+            } else if (mouseX > 200 && mouseX < 350 && mouseY > 700 && mouseY < 800) { // Check if 'Green Area' is clicked
+                message = "You clicked on the Green Area!";
+                interacted = true;
                 showChoices = false;
                 redraw();
+            } else if (mouseX > 700 && mouseX < 850 && mouseY > 700 && mouseY < 800) { // Check if 'Blue Area' is clicked
+                message = "You clicked on the Blue Area!";
+                interacted = true;
+                showChoices = false;
+                redraw();
+            } else {
+                message = '';
+                showChoices = false;
+                clearButtons();
+                redraw();
             }
+        }
+
+        function displayButtons() {
+            const buttonContainer = document.getElementById('buttonContainer');
+            buttonContainer.innerHTML = '';
+            options.forEach(option => {
+                const button = document.createElement('button');
+                button.className = 'button';
+                button.innerText = option.text;
+                button.addEventListener('click', () => {
+                    option.action();
+                    clearButtons();
+                    redraw();
+                });
+                buttonContainer.appendChild(button);
+            });
+        }
+
+        function clearButtons() {
+            const buttonContainer = document.getElementById('buttonContainer');
+            buttonContainer.innerHTML = '';
+        }
+
+        function adjustScore(amount) {
+            score += amount;
+            message = `Current Score: ${score}`;
+        }
+
+        function resetGame() {
+            score = 0;
+            showChoices = false;
+            message = "Game has been reset. Click on the train to make a choice again.";
+            gameEnded = true; // Game is over after making a choice
+            redraw();
+        }
+
+        function displayEndScreen() {
+            background(0);
+            fill(255);
+            textSize(20);
+            textAlign(CENTER, CENTER);
+            text(gameOverPrompt, width / 2, height / 2, 800);
         }
     </script>
 </body>
