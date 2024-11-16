@@ -26,6 +26,7 @@
   let square;
   let score = 0;
   let trainImage;
+  let clickedMessage = "";
 
   function preload() {
     trainImage = loadImage('train1.png');
@@ -55,6 +56,12 @@
     fill(0);
     textSize(32);
     text("Score: " + score, 20, 40);
+
+    if (clickedMessage) {
+      textSize(24);
+      fill(0);
+      text(clickedMessage, 20, height - 60);
+    }
   }
 
   function displayCoordinates() {
@@ -69,6 +76,15 @@
       cursor('pointer');
     } else {
       cursor('default');
+    }
+  }
+
+  function mousePressed() {
+    // Check if the train image is clicked
+    if (mouseX > 400 && mouseX < 600 && mouseY > 400 && mouseY < 500) {
+      clickedMessage = "You clicked on the train!";
+    } else {
+      clickedMessage = "";
     }
   }
 
