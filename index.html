@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simple Train Game</title>
+  <title>P5.js Game</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
   <style>
     body {
       display: flex;
@@ -13,109 +14,122 @@
       margin: 0;
       background-color: #f0f0f0;
     }
-    #canvas-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
+    canvas {
+      display: block;
     }
   </style>
 </head>
 <body>
-  <div id="canvas-container"></div>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
-  <script>
-    let gameOver = false;
-    let decisionMade = false;
-    let outcomeMessage = '';
-    let trainImage;
-    let gameOverImage;
 
-    function preload() {
-      trainImage = loadImage('train1.png');  // Replace with your actual image file for the game background
-      gameOverImage = loadImage('train2.png');  // Replace with your actual image file for the game over screen
+<script>
+  let player;
+  let square;
+  let score = 0;
+  let trainImage;
+
+  function preload() {
+    trainImage = loadImage('train1.png');
+  }
+
+  function setup() {
+    let canvas = createCanvas(1000, 1000);
+    canvas.parent(document.body);
+    player = new Player();
+    square = new Square();
+  }
+
+  function draw() {
+    background(220);
+    image(trainImage, 400, 400, 200, 100);
+    player.update();
+    player.show();
+    square.show();
+    displayCoordinates();
+    checkInteractiveZones();
+
+    if (player.collects(square)) {
+      score++;
+      square.respawn();
     }
 
-    function setup() {
-      let canvas = createCanvas(1000, 1000);
-      canvas.parent('canvas-container'); // Attach the canvas to the HTML container
-      textSize(24);
-      textFont('monospace');
-      centerCanvas(); // Center the canvas initially
+    fill(0);
+    textSize(32);
+    text("Score: " + score, 20, 40);
+  }
+
+  function displayCoordinates() {
+    fill(0);
+    textSize(16);
+    text("x: " + mouseX + " y: " + mouseY, 20, height - 20);
+  }
+
+  function checkInteractiveZones() {
+    // Define mouseover zone for train image
+    if (mouseX > 400 && mouseX < 600 && mouseY > 400 && mouseY < 500) {
+      cursor('pointer');
+    } else {
+      cursor('default');
+    }
+  }
+
+  class Player {
+    constructor() {
+      this.x = width / 2;
+      this.y = height / 2;
+      this.size = 50;
+      this.speed = 5;
     }
 
-    function draw() {
-      if (!gameOver) {
-        // Draw the game background
-        image(trainImage, 0, 0, width, height);
-      } else {
-        // Draw the game over background
-        image(gameOverImage, 0, 0, width, height);
+    update() {
+      if (keyIsDown(LEFT_ARROW)) {
+        this.x -= this.speed;
+      }
+      if (keyIsDown(RIGHT_ARROW)) {
+        this.x += this.speed;
+      }
+      if (keyIsDown(UP_ARROW)) {
+        this.y -= this.speed;
+      }
+      if (keyIsDown(DOWN_ARROW)) {
+        this.y += this.speed;
       }
 
-      fill(0);
-      textSize(24);
-      textFont('monospace');
-
-      if (!gameOver) {
-        // Display prompt text
-        text(
-          "Stare onward and look at that view, take it all in and stare further into the distance, onto the other side of the horizon—yeah, right over there. Do you see it? The emergency brake of that metro car has been tampered with beyond function and it is derailing as we are forced to catch its spectacle. Here, you could stay in the viscid; there, you plummet into chaos.",
-          50,
-          100,
-          width - 100,
-          height - 150
-        );
-
-        // Display choices
-        if (!decisionMade) {
-          fill(0, 102, 153);
-          text("Press 'S' to Stay or 'J' to Jump", 50, 150);
-        } else {
-          fill(0);
-          text(outcomeMessage, 50, 200);
-        }
-      } else {
-        // Display the game-over message
-        fill(255, 0, 0);
-        text("Game Over. Press 'R' to Restart.", 50, 300);
-      }
-
-      // Display the coordinates
-      displayCoordinates();
+      this.x = constrain(this.x, 0, width - this.size);
+      this.y = constrain(this.y, 0, height - this.size);
     }
 
-    function keyPressed() {
-      if (!decisionMade && (key === 's' || key === 'S')) {
-        decisionMade = true;
-        outcomeMessage = "You stayed on the train, hoping it would stop...";
-        gameOver = true;
-      } else if (!decisionMade && (key === 'j' || key === 'J')) {
-        decisionMade = true;
-        outcomeMessage = "You jumped off the train and rolled to safety!";
-        gameOver = true;
-      } else if (key === 'r' || key === 'R') {
-        // Restart the game
-        gameOver = false;
-        decisionMade = false;
-        outcomeMessage = '';
-      }
+    show() {
+      fill(50, 100, 200);
+      noStroke();
+      rect(this.x, this.y, this.size, this.size);
     }
 
-    function displayCoordinates() {
-      fill(255);
-      textSize(16);
-      text("X: " + mouseX + " Y: " + mouseY, 10, height - 10);
+    collects(s) {
+      return (this.x < s.x + s.size &&
+              this.x + this.size > s.x &&
+              this.y < s.y + s.size &&
+              this.y + this.size > s.y);
+    }
+  }
+
+  class Square {
+    constructor() {
+      this.size = 40;
+      this.respawn();
     }
 
-    function windowResized() {
-      centerCanvas();
+    respawn() {
+      this.x = random(width - this.size);
+      this.y = random(height - this.size);
     }
 
-    function centerCanvas() {
-      let x = (windowWidth - width) / 2;
-      let y = (windowHeight - height) / 2;
-      select('#canvas-container').position(x, y);
+    show() {
+      fill(200, 50, 50);
+      noStroke();
+      rect(this.x, this.y, this.size, this.size);
     }
-  </script>
+  }
+</script>
+
 </body>
 </html>
