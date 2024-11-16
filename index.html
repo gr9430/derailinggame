@@ -15,12 +15,14 @@
       overflow: hidden;
       background-color: #f0f0f0;
     }
+    canvas {
+      display: block;
+    }
   </style>
 </head>
 <body>
 <script>
   let player;
-  let square;
   let score = 0;
   let highScore = 0;
   let trainImage;
@@ -38,20 +40,15 @@
     let cnv = createCanvas(1000, 1000);
     cnv.position((windowWidth - width) / 2, (windowHeight - height) / 2);
     player = new Player();
-    square = new Square();
   }
 
   function draw() {
-    // Set the background color
-    background(220);
+    // Set the background image
+    background(trainImage);
     
-    // Draw the train image
-    image(trainImage, 400, 400, 200, 100);
-    
-    // Display player and square
+    // Display player
     player.update();
     player.show();
-    square.show();
     
     // Display game information
     displayCoordinates();
@@ -75,8 +72,24 @@
   }
 
   function checkInteractiveZones() {
-    // Define mouseover zone for train image
-    if (mouseX > 400 && mouseX < 600 && mouseY > 400 && mouseY < 500) {
+    // Define interaction zones for different elements in the image
+    let trainZone = { x: 100, y: 850, w: 800, h: 100 }; // Train at the bottom
+    let tracksZone = { x: 0, y: 900, w: 1000, h: 100 }; // Tracks below the train
+    let cloudZones = [
+      { x: 100, y: 100, w: 200, h: 100 }, // Left cloud
+      { x: 400, y: 50, w: 200, h: 100 },  // Middle cloud
+      { x: 750, y: 150, w: 200, h: 100 }  // Right cloud
+    ];
+    let skylineZone = { x: 300, y: 400, w: 400, h: 200 }; // Skyline on the horizon
+
+    // Check for mouseover and change cursor accordingly
+    if (mouseX > trainZone.x && mouseX < trainZone.x + trainZone.w && mouseY > trainZone.y && mouseY < trainZone.y + trainZone.h) {
+      cursor('pointer');
+    } else if (mouseX > tracksZone.x && mouseX < tracksZone.x + tracksZone.w && mouseY > tracksZone.y && mouseY < tracksZone.y + tracksZone.h) {
+      cursor('pointer');
+    } else if (cloudZones.some(zone => mouseX > zone.x && mouseX < zone.x + zone.w && mouseY > zone.y && mouseY < zone.y + zone.h)) {
+      cursor('pointer');
+    } else if (mouseX > skylineZone.x && mouseX < skylineZone.x + skylineZone.w && mouseY > skylineZone.y && mouseY < skylineZone.y + skylineZone.h) {
       cursor('pointer');
     } else {
       cursor('default');
@@ -84,10 +97,35 @@
   }
 
   function mousePressed() {
-    // Check if the train image is clicked
-    if (mouseX > 400 && mouseX < 600 && mouseY > 400 && mouseY < 500) {
-      clickedMessage = "You clicked on the train! Choose an action:";
-      showChoices = true;
+    // Define interaction zones for different elements in the image
+    let trainZone = { x: 100, y: 850, w: 800, h: 100 }; // Train at the bottom
+    let tracksZone = { x: 0, y: 900, w: 1000, h: 100 }; // Tracks below the train
+    let cloudZones = [
+      { x: 100, y: 100, w: 200, h: 100 }, // Left cloud
+      { x: 400, y: 50, w: 200, h: 100 },  // Middle cloud
+      { x: 750, y: 150, w: 200, h: 100 }  // Right cloud
+    ];
+    let skylineZone = { x: 300, y: 400, w: 400, h: 200 }; // Skyline on the horizon
+
+    // Check if train zone is clicked
+    if (mouseX > trainZone.x && mouseX < trainZone.x + trainZone.w && mouseY > trainZone.y && mouseY < trainZone.y + trainZone.h) {
+      clickedMessage = "You clicked on the train!";
+      highScore++;
+      resetGame();
+    }
+    // Check if tracks zone is clicked
+    else if (mouseX > tracksZone.x && mouseX < tracksZone.x + tracksZone.w && mouseY > tracksZone.y && mouseY < tracksZone.y + tracksZone.h) {
+      clickedMessage = "You clicked on the tracks!";
+      resetGame();
+    }
+    // Check if any cloud zone is clicked
+    else if (cloudZones.some(zone => mouseX > zone.x && mouseX < zone.x + zone.w && mouseY > zone.y && mouseY < zone.y + zone.h)) {
+      clickedMessage = "You clicked on a cloud!";
+      resetGame();
+    }
+    // Check if skyline zone is clicked
+    else if (mouseX > skylineZone.x && mouseX < skylineZone.x + skylineZone.w && mouseY > skylineZone.y && mouseY < skylineZone.y + skylineZone.h) {
+      clickedMessage = "You clicked on the skyline!";
       resetGame();
     }
   }
@@ -98,7 +136,6 @@
     showChoices = false;
     clickedMessage = "";
     player = new Player();
-    square = new Square();
     loop();
   }
 
@@ -130,24 +167,6 @@
 
     show() {
       fill(50, 100, 200);
-      noStroke();
-      rect(this.x, this.y, this.size, this.size);
-    }
-  }
-
-  class Square {
-    constructor() {
-      this.size = 40;
-      this.respawn();
-    }
-
-    respawn() {
-      this.x = random(width - this.size);
-      this.y = random(height - this.size);
-    }
-
-    show() {
-      fill(200, 50, 50);
       noStroke();
       rect(this.x, this.y, this.size, this.size);
     }
