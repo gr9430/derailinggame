@@ -48,31 +48,25 @@
         let message = '';
         let options = [];
         let gameEnded = false;
-let gamePrompt = "Stare onward and look at that view, take it all in and stare further into the distance, onto the other side of the horizon—yeah, right over there. Do you see it? The emergency brake of that metro car has been tampered with beyond function and it is derailing as we are forced to catch its spectacle. Here, you could stay in the viscid; there, you plummet into chaos.";
-let gameOverPrompt = "To believe in non-association is the coping mechanism, forevermore, as the bodies pile atop one another, and a quick glance begs questions of the perpetrator.";
+        let gamePrompt = "Stare onward and look at that view, take it all in and stare further into the distance, onto the other side of the horizon—yeah, right over there. Do you see it? The emergency brake of that metro car has been tampered with beyond function and it is derailing as we are forced to catch its spectacle. Here, you could stay in the viscid; there, you plummet into chaos.";
+        let gameOverPrompt = "To believe in non-association is the coping mechanism, forevermore, as the bodies pile atop one another, and a quick glance begs questions of the perpetrator.";
 
         function preload() {
             trainImage = loadImage('train1.png', 
                 () => console.log('Train image loaded successfully'), 
-                () => console.error('Failed to load train image'));
+                () => console.error('Failed to load train image')
+            );
         }
 
         function setup() {
             let canvas = createCanvas(1000, 1000);
-            canvas.parent('buttonContainer'); // Updated to append to a valid element.
+            canvas.parent(document.body); // Append canvas directly to the body for better positioning.
             noLoop(); // No continuous draw loop; redraw only when needed
         }
 
         function draw() {
             if (gameEnded) {
-            displayEndScreen();
-            return;
-        }
-
-        fill(50);
-        textSize(20);
-        textAlign(LEFT, TOP);
-        text(gamePrompt, 20, 120, 960);
+                displayEndScreen();
                 return;
             }
 
@@ -85,6 +79,11 @@ let gameOverPrompt = "To believe in non-association is the coping mechanism, for
             textSize(32);
             text(`Score: ${score}`, 20, 40);
             text(`High Score: ${highScore} - How many times have you saved this train?`, 20, 80);
+
+            fill(50);
+            textSize(20);
+            textAlign(LEFT, TOP);
+            text(gamePrompt, 20, 120, 960);
 
             if (message) {
                 fill(50, 50, 50, 200);
@@ -113,8 +112,7 @@ let gameOverPrompt = "To believe in non-association is the coping mechanism, for
             if (mouseX > 400 && mouseX < 600 && mouseY > 400 && mouseY < 500) {
                 message = "You clicked on the train! Will you save it or let it derail?";
                 options = [
-                    { text: 'Save the Train (+1 Score)', action: () => { adjustScore(1); highScore++; resetGame();
-            gameEnded = true; } },
+                    { text: 'Save the Train (+1 Score)', action: () => { adjustScore(1); highScore++; resetGame(); } },
                     { text: 'Let it Derail (+5 Score)', action: () => { adjustScore(5); resetGame(); } }
                 ];
                 interacted = true;
@@ -160,6 +158,7 @@ let gameOverPrompt = "To believe in non-association is the coping mechanism, for
             score = 0;
             showChoices = false;
             message = "Game has been reset. Click on the train to make a choice again.";
+            gameEnded = true; // Game is over after making a choice
             redraw();
         }
 
@@ -169,10 +168,6 @@ let gameOverPrompt = "To believe in non-association is the coping mechanism, for
             textSize(20);
             textAlign(CENTER, CENTER);
             text(gameOverPrompt, width / 2, height / 2, 800);
-            fill(255);
-            textSize(32);
-            textAlign(CENTER, CENTER);
-            text('Game Over. Thanks for playing!', width / 2, height / 2);
         }
     </script>
 </body>
