@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Derailing Train Game</title>
+    <title>Derailing Train Game Debug</title>
     <style>
         body {
             display: flex;
@@ -19,6 +19,9 @@
 <body>
     <script>
         let trainImage;
+        let showChoices = false;
+        let message = '';
+        let options = [];
 
         function preload() {
             trainImage = loadImage('train1.png', 
@@ -37,8 +40,39 @@
             background(220);
             if (trainImage) {
                 image(trainImage, 400, 400, 200, 100);
+            }
+
+            // Draw an interactive area around the train image for debugging purposes
+            if (showChoices) {
+                fill(255, 0, 0, 150);
+                rect(400, 400, 200, 100);
+            }
+
+            // Display interaction message if set
+            if (message) {
+                fill(50, 50, 50, 200);
+                noStroke();
+                rect(20, 20, width - 40, 100, 10);
+                fill(255);
+                textSize(20);
+                textAlign(LEFT, TOP);
+                text(message, 40, 40, width - 80);
+            }
+        }
+
+        function mousePressed() {
+            // Debugging: Log mouse positions to see if clicks are being recognized
+            console.log(`Mouse pressed at (${mouseX}, ${mouseY})`);
+
+            // Check if the mouse is clicking on the train image
+            if (mouseX > 400 && mouseX < 600 && mouseY > 400 && mouseY < 500) {
+                message = "You clicked on the train! Will you save it or let it derail?";
+                showChoices = true; // Highlight the interactive area
+                redraw();
             } else {
-                console.error('trainImage not loaded.');
+                message = "";
+                showChoices = false;
+                redraw();
             }
         }
     </script>
