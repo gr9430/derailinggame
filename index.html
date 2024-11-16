@@ -40,11 +40,13 @@
     let cnv = createCanvas(1000, 1000);
     cnv.position((windowWidth - width) / 2, (windowHeight - height) / 2);
     player = new Player();
+    imageMode(CORNER); // Align image to top-left corner
   }
 
   function draw() {
     // Set the background image
-    background(trainImage);
+    background(220);
+    image(trainImage, 0, 0, width, height);
     
     // Display player
     player.update();
@@ -63,6 +65,9 @@
     textSize(20);
     textAlign(LEFT, TOP);
     text(gamePrompt, 20, 120, 960);
+
+    // Draw interaction zones for visual debugging
+    drawInteractionZones();
   }
 
   function displayCoordinates() {
@@ -83,13 +88,7 @@
     let skylineZone = { x: 300, y: 400, w: 400, h: 200 }; // Skyline on the horizon
 
     // Check for mouseover and change cursor accordingly
-    if (mouseX > trainZone.x && mouseX < trainZone.x + trainZone.w && mouseY > trainZone.y && mouseY < trainZone.y + trainZone.h) {
-      cursor('pointer');
-    } else if (mouseX > tracksZone.x && mouseX < tracksZone.x + tracksZone.w && mouseY > tracksZone.y && mouseY < tracksZone.y + tracksZone.h) {
-      cursor('pointer');
-    } else if (cloudZones.some(zone => mouseX > zone.x && mouseX < zone.x + zone.w && mouseY > zone.y && mouseY < zone.y + zone.h)) {
-      cursor('pointer');
-    } else if (mouseX > skylineZone.x && mouseX < skylineZone.x + skylineZone.w && mouseY > skylineZone.y && mouseY < skylineZone.y + skylineZone.h) {
+    if (mouseInZone(trainZone) || mouseInZone(tracksZone) || cloudZones.some(mouseInZone) || mouseInZone(skylineZone)) {
       cursor('pointer');
     } else {
       cursor('default');
@@ -108,23 +107,23 @@
     let skylineZone = { x: 300, y: 400, w: 400, h: 200 }; // Skyline on the horizon
 
     // Check if train zone is clicked
-    if (mouseX > trainZone.x && mouseX < trainZone.x + trainZone.w && mouseY > trainZone.y && mouseY < trainZone.y + trainZone.h) {
+    if (mouseInZone(trainZone)) {
       clickedMessage = "You clicked on the train!";
       highScore++;
       resetGame();
     }
     // Check if tracks zone is clicked
-    else if (mouseX > tracksZone.x && mouseX < tracksZone.x + tracksZone.w && mouseY > tracksZone.y && mouseY < tracksZone.y + tracksZone.h) {
+    else if (mouseInZone(tracksZone)) {
       clickedMessage = "You clicked on the tracks!";
       resetGame();
     }
     // Check if any cloud zone is clicked
-    else if (cloudZones.some(zone => mouseX > zone.x && mouseX < zone.x + zone.w && mouseY > zone.y && mouseY < zone.y + zone.h)) {
+    else if (cloudZones.some(mouseInZone)) {
       clickedMessage = "You clicked on a cloud!";
       resetGame();
     }
     // Check if skyline zone is clicked
-    else if (mouseX > skylineZone.x && mouseX < skylineZone.x + skylineZone.w && mouseY > skylineZone.y && mouseY < skylineZone.y + skylineZone.h) {
+    else if (mouseInZone(skylineZone)) {
       clickedMessage = "You clicked on the skyline!";
       resetGame();
     }
@@ -137,6 +136,24 @@
     clickedMessage = "";
     player = new Player();
     loop();
+  }
+
+  function drawInteractionZones() {
+    // Draw interaction zones for visual debugging
+    noFill();
+    stroke(255, 0, 0);
+    strokeWeight(2);
+    rect(100, 850, 800, 100); // Train
+    rect(0, 900, 1000, 100);  // Tracks
+    rect(100, 100, 200, 100); // Left cloud
+    rect(400, 50, 200, 100);  // Middle cloud
+    rect(750, 150, 200, 100); // Right cloud
+    rect(300, 400, 400, 200); // Skyline
+    noStroke();
+  }
+
+  function mouseInZone(zone) {
+    return mouseX > zone.x && mouseX < zone.x + zone.w && mouseY > zone.y && mouseY < zone.y + zone.h;
   }
 
   class Player {
