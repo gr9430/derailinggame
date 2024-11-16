@@ -48,26 +48,38 @@
         let message = '';
         let options = [];
         let gameEnded = false;
+let gamePrompt = "Stare onward and look at that view, take it all in and stare further into the distance, onto the other side of the horizon—yeah, right over there. Do you see it? The emergency brake of that metro car has been tampered with beyond function and it is derailing as we are forced to catch its spectacle. Here, you could stay in the viscid; there, you plummet into chaos.";
+let gameOverPrompt = "To believe in non-association is the coping mechanism, forevermore, as the bodies pile atop one another, and a quick glance begs questions of the perpetrator.";
 
         function preload() {
-            trainImage = loadImage('train1.png', () => console.log('Background image loaded successfully'), 
+            trainImage = loadImage('train1.png', 
+                () => console.log('Train image loaded successfully'), 
                 () => console.error('Failed to load train image'));
         }
 
         function setup() {
             let canvas = createCanvas(1000, 1000);
-            canvas.parent('canvasContainer');
+            canvas.parent('buttonContainer'); // Updated to append to a valid element.
             noLoop(); // No continuous draw loop; redraw only when needed
         }
 
         function draw() {
             if (gameEnded) {
-                displayEndScreen();
+            displayEndScreen();
+            return;
+        }
+
+        fill(50);
+        textSize(20);
+        textAlign(LEFT, TOP);
+        text(gamePrompt, 20, 120, 960);
                 return;
             }
 
             background(220);
-            image(trainImage, 400, 400, 200, 100);
+            if (trainImage) {
+                image(trainImage, 400, 400, 200, 100);
+            }
 
             fill(0);
             textSize(32);
@@ -101,7 +113,8 @@
             if (mouseX > 400 && mouseX < 600 && mouseY > 400 && mouseY < 500) {
                 message = "You clicked on the train! Will you save it or let it derail?";
                 options = [
-                    { text: 'Save the Train (+1 Score)', action: () => { adjustScore(1); highScore++; resetGame(); } },
+                    { text: 'Save the Train (+1 Score)', action: () => { adjustScore(1); highScore++; resetGame();
+            gameEnded = true; } },
                     { text: 'Let it Derail (+5 Score)', action: () => { adjustScore(5); resetGame(); } }
                 ];
                 interacted = true;
@@ -152,6 +165,10 @@
 
         function displayEndScreen() {
             background(0);
+            fill(255);
+            textSize(20);
+            textAlign(CENTER, CENTER);
+            text(gameOverPrompt, width / 2, height / 2, 800);
             fill(255);
             textSize(32);
             textAlign(CENTER, CENTER);
