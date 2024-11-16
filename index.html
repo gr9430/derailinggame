@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Interactive Train Game</title>
+  <title>Simplified Train Game</title>
   <style>
     body {
       display: flex;
@@ -24,248 +24,66 @@
   <div id="canvas-container"></div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
   <script>
-    let gameState = 0;
-    let flickerTimer = 0;
-    let playerInput = '';
     let gameOver = false;
-    let round = 1;
-    let clickedMessage = '';
-    let score = 0;
-    let highScores = [];
-    let interactedObjects = {
-      glowingHorizon: false,
-    };
+    let decisionMade = false;
+    let outcomeMessage = "To believe in non-association is the coping mechanism, forevermore, as the bodies pile atop one another, and a quick glance begs questions of the perpetrator.";
     let trainImage;
+let gameOverImage;
 
     function preload() {
-      trainImage = loadImage('train1.png');
-    }
+  trainImage = loadImage('train1.png');
+  gameOverImage = loadImage('train2.png'); // Load the game over image
+}
 
     function setup() {
-      let canvas = createCanvas(1000, 1000);
+      let canvas = createCanvas(600, 400);
       canvas.parent('canvas-container');
-      textSize(32);
+      textSize(24);
       textFont('monospace');
-      centerCanvas();
     }
 
     function draw() {
-      image(trainImage, 0, 0, width, height); // Draw the background image
-      textSize(32);
-      fill(0, 0, 0, 200);
+      if (!gameOver) {
+    image(trainImage, 0, 0, width, height); // Draw the main game background
+  } else {
+    image(gameOverImage, 0, 0, width, height); // Draw the game over background
+  } // Draw the background image
+      fill(0);
 
       if (!gameOver) {
-        // Display the round-specific text
-        if (round === 1) {
-          text(getRandomRound1Text(), 10, 50, width - 20, height - 100);
-        } else if (round === 2) {
-          flickerText(getRandomRound2Text(), 10, 50, width - 20, height - 100);
-        } else if (round === 3) {
-          text(getRandomRound3Text(), 10, 50, width - 20, height - 100);
-        }
+        // Display the scenario text
+        text("Stare onward and look at that view, take it all in and stare further into the distance, onto the other side of the horizon—yeah, right over there. Do you see it? The emergency brake of that metro car has been tampered with beyond function and it is derailing as we are forced to catch its spectacle. Here, you could stay in the viscid; there, you plummet into chaos.", 50, 100, width - 100, height - 150);
 
-        // Display the input prompt
-        textSize(18);
-        text("What do you do?", 10, 900);
-        textSize(32);
-        fill(0, 0, 0, 200);
-        text(playerInput, 10, 920);
-
-        // Display clicked message if any
-        if (clickedMessage !== '') {
-          fill(0, 0, 0, 200);
-          textSize(20);
-          text(clickedMessage, 10, 960);
-        }
-
-        // Check if all objects have been interacted with
-        if (Object.values(interactedObjects).every(Boolean)) {
-          gameOver = true;
+        // Display choices
+        if (!decisionMade) {
+          fill(0, 102, 153);
+          text("Press 'S' to Stay or 'J' to Jump", 50, 150);
+        } else {
+          fill(0);
+          text(outcomeMessage, 50, 200);
         }
       } else {
-        // Display the ending message based on player decisions
-        displayEndingMessage();
-
-        // Display replay option
-        textSize(24);
-        fill(255);
-        text("Press 'R' to restart the game.", 10, 980);
-
-        // Display high scores
-        textSize(20);
-        fill(255);
-        text("High Scores:", 800, 50);
-        for (let i = 0; i < highScores.length; i++) {
-          text((i + 1) + ". " + highScores[i], 800, 80 + i * 30);
-        }
+        // Display the game-over message
+        fill(255, 0, 0);
+        text("Game Over. Press 'R' to Restart.", 50, 300);
       }
-
-      // Display the score
-      fill(255);
-      textSize(20);
-      text("How many times have you saved the train? " + score, 10, 30);
-
-      // Display the coordinates
-      displayCoordinates();
-
-      // Check for interactive zones
-      checkInteractiveZones();
     }
 
     function keyPressed() {
-      if (keyCode === ENTER) {
-        if (playerInput.toLowerCase() === "stay" || playerInput.toLowerCase() === "run") {
-          if (round < 3) {
-            round++;
-            playerInput = "";
-          } else {
-            gameOver = true;
-            highScores.push(score);
-            highScores.sort((a, b) => b - a);
-            if (highScores.length > 5) {
-              highScores.pop();
-            }
-          }
-        } else {
-          // Invalid input, clear
-          playerInput = "";
-        }
+      if (!decisionMade && (key === 's' || key === 'S')) {
+        decisionMade = true;
+        outcomeMessage = "You stayed on the train, hoping it would stop...";
+        gameOver = true;
+      } else if (!decisionMade && (key === 'j' || key === 'J')) {
+        decisionMade = true;
+        outcomeMessage = "You jumped off the train and rolled to safety!";
+        gameOver = true;
       } else if (key === 'r' || key === 'R') {
         // Restart the game
-        restartGame();
-      } else {
-        playerInput += key;
+        gameOver = false;
+        decisionMade = false;
+        outcomeMessage = '';
       }
-    }
-
-    function mousePressed() {
-      // Check if the glowing horizon in round 1 is clicked
-      if (round === 1 && mouseX > width / 2 - 150 && mouseX < width / 2 + 150 && mouseY > height / 4 - 100 && mouseY < height / 4 + 100) {
-        clickedMessage = "The horizon glows brighter as you focus on it.";
-        score++;
-        interactedObjects.glowingHorizon = true;
-      }
-    }
-
-    function drawBackground() {
-      if (round === 1) {
-        // Calm horizon colors
-        background(random(80, 120), random(130, 170), random(230, 255));
-        noStroke();
-        fill(255, 200, 150, 150);
-        ellipse(width / 2, height / 4, random(250, 350), random(180, 220)); // A glowing horizon
-      } else if (round === 2) {
-        // Intense chaotic colors
-        background(random(150, 200), random(30, 70), random(30, 70));
-        for (let i = 0; i < width; i += 20) {
-          stroke(255, random(100, 200));
-          line(i, 0, i - random(10), height); // Motion blur effect
-        }
-      } else if (round === 3) {
-        // Abyss colors
-        background(random(10, 30), random(0, 20), random(30, 50));
-        noStroke();
-        for (let i = 0; i < 500; i++) {
-          fill(random(50, 200), random(0, 50), random(50, 100), 50);
-          ellipse(random(width), random(height), random(10, 50)); // Viscous shapes
-        }
-      }
-    }
-
-    function flickerText(txt, x, y, w, h) {
-      if (millis() - flickerTimer > 500) { // change color every 500ms
-        fill(random(200, 255), 0, 0); // Flicker with a more consistent red color
-        flickerTimer = millis();
-      }
-      text(txt, x, y, w, h);
-    }
-
-    function chaoticEndMessage() {
-      background(random(100, 255), random(0, 100), random(0, 100)); // Flashing colors
-      textSize(24);
-      fill(255, 0, 0);
-      text("The train crashes. You are consumed by chaos.", 10, 950, width - 20);
-
-      // Display a summary of the player's actions
-      textSize(18);
-      fill(255);
-      text("Summary of your actions: You chose to '" + playerInput + "' during the critical moments. The choices led to the inevitable crash.", 10, 980, width - 20);
-    }
-
-    function displayEndingMessage() {
-      background(0);
-      textSize(30);
-      fill(255);
-      if (interactedObjects.glowingHorizon) {
-        text("You interacted with the glowing horizon. Your decisions have brought you to this point. The train's fate is sealed.", 10, 500, width - 20);
-      } else {
-        text("You chose not to interact with the world around you. The train's fate remains uncertain, but chaos has found you.", 10, 500, width - 20);
-      }
-    }
-
-    function restartGame() {
-      gameState = 0;
-      playerInput = '';
-      gameOver = false;
-      round = 1;
-      clickedMessage = '';
-      score = 0;
-      interactedObjects = {
-        glowingHorizon: false,
-      };
-    }
-
-    function displayCoordinates() {
-      fill(255);
-      textSize(16);
-      text("X: " + mouseX + " Y: " + mouseY, 10, height - 10);
-    }
-
-    function getRandomRound1Text() {
-      const texts = [
-        "Stare onward and look at that view, take it all and stare further into the distance, onto the other side of the horizon—yeah, right over there. Do you see it?",
-        "The horizon stretches far and wide, a gentle breeze, but something feels off. Do you feel it?",
-        "The sun hangs low, casting a strange glow over the landscape. There's something almost eerie about it."  
-      ];
-      return random(texts);
-    }
-
-    function getRandomRound2Text() {
-      const texts = [
-        "The train is accelerating, the world is blurring around you. The emergency brake is still jammed, what do you do?",
-        "You hear the clattering of the wheels intensify as the train picks up speed. The emergency brake feels like a distant hope. What now?",
-        "The world outside rushes past in a blur of color. The train speeds forward uncontrollably. The emergency brake doesn't budge, what do you do?"
-      ];
-      return random(texts);
-    }
-
-    function getRandomRound3Text() {
-      const texts = [
-        "The train is plummeting towards the abyss, the world is dissolving into madness. The emergency brake is now a distant memory, what do you do?",
-        "The train spirals into chaos, the ground beneath is gone. The abyss awaits. Do you make a move, or let it all fade?",
-        "Darkness surrounds as the train descends. You feel the pull of the unknown, the emergency brake is gone—what's your final action?"
-      ];
-      return random(texts);
-    }
-
-    function checkInteractiveZones() {
-      // Define interactive zone for the glowing horizon in round 1
-      if (round === 1 && mouseX > width / 2 - 150 && mouseX < width / 2 + 150 && mouseY > height / 4 - 100 && mouseY < height / 4 + 100) {
-        cursor('pointer');
-      } else {
-        cursor('default');
-      }
-    }
-
-    function windowResized() {
-      resizeCanvas(1000, 1000);
-      centerCanvas();
-    }
-
-    function centerCanvas() {
-      let x = (windowWidth - width) / 2;
-      let y = (windowHeight - height) / 2;
-      select('#canvas-container').position(x, y);
     }
   </script>
 </body>
