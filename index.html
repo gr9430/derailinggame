@@ -1,195 +1,162 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>P5.js Endless Game</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
-  <style>
-    body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-      background-color: #f0f0f0;
-    }
-    canvas {
-      display: block;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Derailing Train Game</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .button-container {
+            position: absolute;
+            top: 650px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
 </head>
 <body>
+    <div id="buttonContainer" class="button-container"></div>
+    <script>
+        let trainImage;
+        let highScore = 0;
+        let score = 0;
+        let showChoices = false;
+        let message = '';
+        let options = [];
+        let gameEnded = false;
 
-<script>
-  let player;
-  let square;
-  let score = 0;
-  let highScore = 0;
-  let trainImage;
-  let clickedMessage = "";
-  let showChoices = false;
-  let gamePrompt = "Stare onward and look at that view, take it all in and stare further into the distance, onto the other side of the horizon—yeah, right over there. Do you see it? The emergency brake of that metro car has been tampered with beyond function and it is derailing as we are forced to catch its spectacle. Here, you could stay in the viscid; there, you plummet into chaos.";
-
-  function preload() {
-    trainImage = loadImage('train1.png');
-  }
+        function preload() {
+            trainImage = loadImage('train1.png', () => console.log('Background image loaded successfully'), 
+                () => console.error('Failed to load train image'));
+        }
 
         function setup() {
-            // Create a 1000x1000 canvas and center it
-            let cnv = createCanvas(1000, 1000);
-            cnv.position((windowWidth - width) / 2, (windowHeight - height) / 2);
-  }
+            let canvas = createCanvas(1000, 1000);
+            canvas.parent('canvasContainer');
+            noLoop(); // No continuous draw loop; redraw only when needed
+        }
 
-  function draw() {
-    background(220);
-    image(trainImage, 400, 400, 200, 100);
-    player.update();
-    player.show();
-    square.show();
-    displayCoordinates();
-    checkInteractiveZones();
+        function draw() {
+            if (gameEnded) {
+                displayEndScreen();
+                return;
+            }
 
-    fill(0);
-    textSize(32);
-    text("Score: " + score, 20, 40);
-    text("High Score: " + highScore + " - How many times have you saved this train?", 20, 80);
+            background(220);
+            image(trainImage, 400, 400, 200, 100);
 
-    fill(50);
-    textSize(20);
-    textAlign(LEFT, TOP);
-    text(gamePrompt, 20, 120, 960);
+            fill(0);
+            textSize(32);
+            text(`Score: ${score}`, 20, 40);
+            text(`High Score: ${highScore} - How many times have you saved this train?`, 20, 80);
 
-    if (showChoices) {
-      // Draw +1 Score Button
-      fill(50);
-      rect(375, 550, 200, 50);
-      fill(255);
-      textSize(20);
-      textAlign(CENTER, CENTER);
-      text("Save the Train (+1)", 475, 575);
+            if (message) {
+                fill(50, 50, 50, 200);
+                noStroke();
+                rect(20, 20, width - 40, 200, 10);
+                fill(255);
+                textSize(20);
+                textAlign(LEFT, TOP);
+                textWrap(WORD);
+                text(message, 40, 40, width - 80);
+            }
 
-      // Draw +5 Score Button
-      fill(50);
-      rect(625, 550, 200, 50);
-      fill(255);
-      textSize(20);
-      textAlign(CENTER, CENTER);
-      text("Let it Derail (+5)", 725, 575);
-    }
-  }
+            if (showChoices) {
+                displayButtons();
+            }
+        }
 
-  function displayCoordinates() {
-    fill(0);
-    textSize(16);
-    text("x: " + mouseX + " y: " + mouseY, 20, height - 20);
-  }
+        function mousePressed() {
+            if (gameEnded) {
+                return;
+            }
 
-  function checkInteractiveZones() {
-    // Define mouseover zone for train image
-    if (mouseX > 400 && mouseX < 600 && mouseY > 400 && mouseY < 500) {
-      cursor('pointer');
-    } else if (showChoices && ((mouseX > 375 && mouseX < 575 && mouseY > 550 && mouseY < 600) || (mouseX > 625 && mouseX < 825 && mouseY > 550 && mouseY < 600))) {
-      cursor('pointer');
-    } else {
-      cursor('default');
-    }
-  }
+            let interacted = false;
 
-  function mousePressed() {
-    // Check if the train image is clicked
-    if (mouseX > 400 && mouseX < 600 && mouseY > 400 && mouseY < 500) {
-      clickedMessage = "You clicked on the train! Choose an action:";
-      showChoices = true;
-    } else if (showChoices) {
-      // Check if +1 Score button is clicked
-      if (mouseX > 375 && mouseX < 575 && mouseY > 550 && mouseY < 600) {
-        score += 1;
-        highScore++;
-        clickedMessage = "You saved the train!";
-        resetGame();
-      }
-      // Check if +5 Score button is clicked
-      else if (mouseX > 625 && mouseX < 825 && mouseY > 550 && mouseY < 600) {
-        score += 5;
-        clickedMessage = "You let it derail...";
-        resetGame();
-      } else {
-        clickedMessage = "";
-        showChoices = false;
-      }
-    } else {
-      clickedMessage = "";
-    }
-  }
+            // Check if train image is clicked
+            if (mouseX > 400 && mouseX < 600 && mouseY > 400 && mouseY < 500) {
+                message = "You clicked on the train! Will you save it or let it derail?";
+                options = [
+                    { text: 'Save the Train (+1 Score)', action: () => { adjustScore(1); highScore++; resetGame(); } },
+                    { text: 'Let it Derail (+5 Score)', action: () => { adjustScore(5); resetGame(); } }
+                ];
+                interacted = true;
+                showChoices = true;
+                redraw();
+            }
 
-  function resetGame() {
-    score = 0;
-    showChoices = false;
-    clickedMessage = "";
-    player = new Player();
-    square = new Square();
-    loop();
-  }
+            if (!interacted) {
+                message = '';
+                showChoices = false;
+                clearButtons();
+                redraw();
+            }
+        }
 
-  class Player {
-    constructor() {
-      this.x = width / 2;
-      this.y = height / 2;
-      this.size = 50;
-      this.speed = 5;
-    }
+        function displayButtons() {
+            const buttonContainer = document.getElementById('buttonContainer');
+            buttonContainer.innerHTML = '';
+            options.forEach(option => {
+                const button = document.createElement('button');
+                button.className = 'button';
+                button.innerText = option.text;
+                button.addEventListener('click', () => {
+                    option.action();
+                    clearButtons();
+                    redraw();
+                });
+                buttonContainer.appendChild(button);
+            });
+        }
 
-    update() {
-      if (keyIsDown(LEFT_ARROW)) {
-        this.x -= this.speed;
-      }
-      if (keyIsDown(RIGHT_ARROW)) {
-        this.x += this.speed;
-      }
-      if (keyIsDown(UP_ARROW)) {
-        this.y -= this.speed;
-      }
-      if (keyIsDown(DOWN_ARROW)) {
-        this.y += this.speed;
-      }
+        function clearButtons() {
+            const buttonContainer = document.getElementById('buttonContainer');
+            buttonContainer.innerHTML = '';
+        }
 
-      this.x = constrain(this.x, 0, width - this.size);
-      this.y = constrain(this.y, 0, height - this.size);
-    }
+        function adjustScore(amount) {
+            score += amount;
+            message = `Current Score: ${score}`;
+        }
 
-    show() {
-      fill(50, 100, 200);
-      noStroke();
-      rect(this.x, this.y, this.size, this.size);
-    }
+        function resetGame() {
+            score = 0;
+            showChoices = false;
+            message = "Game has been reset. Click on the train to make a choice again.";
+            redraw();
+        }
 
-    collects(s) {
-      return (this.x < s.x + s.size &&
-              this.x + this.size > s.x &&
-              this.y < s.y + s.size &&
-              this.y + this.size > s.y);
-    }
-  }
-
-  class Square {
-    constructor() {
-      this.size = 40;
-      this.respawn();
-    }
-
-    respawn() {
-      this.x = random(width - this.size);
-      this.y = random(height - this.size);
-    }
-
-    show() {
-      fill(200, 50, 50);
-      noStroke();
-      rect(this.x, this.y, this.size, this.size);
-    }
-  }
-</script>
-
+        function displayEndScreen() {
+            background(0);
+            fill(255);
+            textSize(32);
+            textAlign(CENTER, CENTER);
+            text('Game Over. Thanks for playing!', width / 2, height / 2);
+        }
+    </script>
 </body>
 </html>
