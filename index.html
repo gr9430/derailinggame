@@ -12,7 +12,6 @@
       align-items: center;
       height: 100vh;
       margin: 0;
-      overflow: hidden;
       background-color: #f0f0f0;
     }
     canvas {
@@ -21,8 +20,10 @@
   </style>
 </head>
 <body>
+
 <script>
   let player;
+  let square;
   let score = 0;
   let highScore = 0;
   let trainImage;
@@ -31,28 +32,21 @@
   let gamePrompt = "Stare onward and look at that view, take it all in and stare further into the distance, onto the other side of the horizon—yeah, right over there. Do you see it? The emergency brake of that metro car has been tampered with beyond function and it is derailing as we are forced to catch its spectacle. Here, you could stay in the viscid; there, you plummet into chaos.";
 
   function preload() {
-    // Load the train image
     trainImage = loadImage('train1.png');
   }
 
-  function setup() {
-    // Create a 1000x1000 canvas and center it
-    let cnv = createCanvas(1000, 1000);
-    cnv.position((windowWidth - width) / 2, (windowHeight - height) / 2);
-    player = new Player();
-    imageMode(CORNER); // Align image to top-left corner
+        function setup() {
+            // Create a 1000x1000 canvas and center it
+            let cnv = createCanvas(1000, 1000);
+            cnv.position((windowWidth - width) / 2, (windowHeight - height) / 2);
   }
 
   function draw() {
-    // Set the background image
     background(220);
-    image(trainImage, 0, 0, width, height);
-    
-    // Display player
+    image(trainImage, 400, 400, 200, 100);
     player.update();
     player.show();
-    
-    // Display game information
+    square.show();
     displayCoordinates();
     checkInteractiveZones();
 
@@ -66,8 +60,23 @@
     textAlign(LEFT, TOP);
     text(gamePrompt, 20, 120, 960);
 
-    // Draw interaction zones for visual debugging
-    drawInteractionZones();
+    if (showChoices) {
+      // Draw +1 Score Button
+      fill(50);
+      rect(375, 550, 200, 50);
+      fill(255);
+      textSize(20);
+      textAlign(CENTER, CENTER);
+      text("Save the Train (+1)", 475, 575);
+
+      // Draw +5 Score Button
+      fill(50);
+      rect(625, 550, 200, 50);
+      fill(255);
+      textSize(20);
+      textAlign(CENTER, CENTER);
+      text("Let it Derail (+5)", 725, 575);
+    }
   }
 
   function displayCoordinates() {
@@ -77,18 +86,10 @@
   }
 
   function checkInteractiveZones() {
-    // Define interaction zones for different elements in the image
-    let trainZone = { x: 100, y: 850, w: 800, h: 100 }; // Train at the bottom
-    let tracksZone = { x: 0, y: 900, w: 1000, h: 100 }; // Tracks below the train
-    let cloudZones = [
-      { x: 100, y: 100, w: 200, h: 100 }, // Left cloud
-      { x: 400, y: 50, w: 200, h: 100 },  // Middle cloud
-      { x: 750, y: 150, w: 200, h: 100 }  // Right cloud
-    ];
-    let skylineZone = { x: 300, y: 400, w: 400, h: 200 }; // Skyline on the horizon
-
-    // Check for mouseover and change cursor accordingly
-    if (mouseInZone(trainZone) || mouseInZone(tracksZone) || cloudZones.some(mouseInZone) || mouseInZone(skylineZone)) {
+    // Define mouseover zone for train image
+    if (mouseX > 400 && mouseX < 600 && mouseY > 400 && mouseY < 500) {
+      cursor('pointer');
+    } else if (showChoices && ((mouseX > 375 && mouseX < 575 && mouseY > 550 && mouseY < 600) || (mouseX > 625 && mouseX < 825 && mouseY > 550 && mouseY < 600))) {
       cursor('pointer');
     } else {
       cursor('default');
@@ -96,64 +97,39 @@
   }
 
   function mousePressed() {
-    // Define interaction zones for different elements in the image
-    let trainZone = { x: 100, y: 850, w: 800, h: 100 }; // Train at the bottom
-    let tracksZone = { x: 0, y: 900, w: 1000, h: 100 }; // Tracks below the train
-    let cloudZones = [
-      { x: 100, y: 100, w: 200, h: 100 }, // Left cloud
-      { x: 400, y: 50, w: 200, h: 100 },  // Middle cloud
-      { x: 750, y: 150, w: 200, h: 100 }  // Right cloud
-    ];
-    let skylineZone = { x: 300, y: 400, w: 400, h: 200 }; // Skyline on the horizon
-
-    // Check if train zone is clicked
-    if (mouseInZone(trainZone)) {
-      clickedMessage = "You clicked on the train!";
-      highScore++;
-      resetGame();
-    }
-    // Check if tracks zone is clicked
-    else if (mouseInZone(tracksZone)) {
-      clickedMessage = "You clicked on the tracks!";
-      resetGame();
-    }
-    // Check if any cloud zone is clicked
-    else if (cloudZones.some(mouseInZone)) {
-      clickedMessage = "You clicked on a cloud!";
-      resetGame();
-    }
-    // Check if skyline zone is clicked
-    else if (mouseInZone(skylineZone)) {
-      clickedMessage = "You clicked on the skyline!";
-      resetGame();
+    // Check if the train image is clicked
+    if (mouseX > 400 && mouseX < 600 && mouseY > 400 && mouseY < 500) {
+      clickedMessage = "You clicked on the train! Choose an action:";
+      showChoices = true;
+    } else if (showChoices) {
+      // Check if +1 Score button is clicked
+      if (mouseX > 375 && mouseX < 575 && mouseY > 550 && mouseY < 600) {
+        score += 1;
+        highScore++;
+        clickedMessage = "You saved the train!";
+        resetGame();
+      }
+      // Check if +5 Score button is clicked
+      else if (mouseX > 625 && mouseX < 825 && mouseY > 550 && mouseY < 600) {
+        score += 5;
+        clickedMessage = "You let it derail...";
+        resetGame();
+      } else {
+        clickedMessage = "";
+        showChoices = false;
+      }
+    } else {
+      clickedMessage = "";
     }
   }
 
   function resetGame() {
-    // Reset game variables
     score = 0;
     showChoices = false;
     clickedMessage = "";
     player = new Player();
+    square = new Square();
     loop();
-  }
-
-  function drawInteractionZones() {
-    // Draw interaction zones for visual debugging
-    noFill();
-    stroke(255, 0, 0);
-    strokeWeight(2);
-    rect(100, 850, 800, 100); // Train
-    rect(0, 900, 1000, 100);  // Tracks
-    rect(100, 100, 200, 100); // Left cloud
-    rect(400, 50, 200, 100);  // Middle cloud
-    rect(750, 150, 200, 100); // Right cloud
-    rect(300, 400, 400, 200); // Skyline
-    noStroke();
-  }
-
-  function mouseInZone(zone) {
-    return mouseX > zone.x && mouseX < zone.x + zone.w && mouseY > zone.y && mouseY < zone.y + zone.h;
   }
 
   class Player {
@@ -187,13 +163,33 @@
       noStroke();
       rect(this.x, this.y, this.size, this.size);
     }
+
+    collects(s) {
+      return (this.x < s.x + s.size &&
+              this.x + this.size > s.x &&
+              this.y < s.y + s.size &&
+              this.y + this.size > s.y);
+    }
   }
 
-  function windowResized() {
-    resizeCanvas(1000, 1000);
-    let cnv = createCanvas(1000, 1000);
-    cnv.position((windowWidth - width) / 2, (windowHeight - height) / 2);
+  class Square {
+    constructor() {
+      this.size = 40;
+      this.respawn();
+    }
+
+    respawn() {
+      this.x = random(width - this.size);
+      this.y = random(height - this.size);
+    }
+
+    show() {
+      fill(200, 50, 50);
+      noStroke();
+      rect(this.x, this.y, this.size, this.size);
+    }
   }
 </script>
+
 </body>
 </html>
