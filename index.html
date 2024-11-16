@@ -1,84 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>P5.js Endless Game</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
-  <style>
-    body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-      background-color: #f0f0f0;
-    }
-    canvas {
-      display: block;
-    }
-  </style>
+	  <meta charset="UTF-8">
+	  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	  <title>P5.js Endless Game</title>
+	  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+		  <style>
+		    body {
+		      display: flex;
+		      justify-content: center;
+		      align-items: center;
+		      height: 100vh;
+		      margin: 0;
+		      overflow: hidden;
+		      background-color: #f0f0f0;
+	    }
+	  </style>
 </head>
 <body>
+		<script>
+		  let player;
+		  let square;
+		  let score = 0;
+		  let highScore = 0;
+		  let trainImage;
+		  let clickedMessage = "";
+		  let showChoices = false;
+		  let gamePrompt = "Stare onward and look at that view, take it all in and stare further into the distance, onto the other side of the horizon—yeah, right over there. Do you see it? The emergency brake of that metro car has been tampered with beyond function and it is derailing as we are forced to catch its spectacle. Here, you could stay in the viscid; there, you plummet into chaos.";
 
-<script>
-  let player;
-  let square;
-  let score = 0;
-  let highScore = 0;
-  let trainImage;
-  let clickedMessage = "";
-  let showChoices = false;
-  let gamePrompt = "Stare onward and look at that view, take it all in and stare further into the distance, onto the other side of the horizon—yeah, right over there. Do you see it? The emergency brake of that metro car has been tampered with beyond function and it is derailing as we are forced to catch its spectacle. Here, you could stay in the viscid; there, you plummet into chaos.";
+		  function preload() {
+			  // Load the train image
+		    trainImage = loadImage('train1.png');
+		  }
 
-  function preload() {
-    trainImage = loadImage('train1.png');
-  }
-
-  function setup() {
-    let canvas = createCanvas(1000, 1000);
-    canvas.parent(document.body);
+		  function setup() {
+		  // Create a 1000x1000 canvas and center it
+		let cnv = createCanvas(1000, 1000);
+		cnv.position((windowWidth - width) /2, (windowHeight - height) / 2);
     player = new Player();
     square = new Square();
   }
 
-  function draw() {
-    background(220);
-    image(trainImage, 400, 400, 200, 100);
-    player.update();
-    player.show();
-    square.show();
-    displayCoordinates();
-    checkInteractiveZones();
-
-    fill(0);
-    textSize(32);
-    text("Score: " + score, 20, 40);
-    text("High Score: " + highScore + " - How many times have you saved this train?", 20, 80);
-
-    fill(50);
+		  function draw() {
+			 // Draw the train image as the background 
+	    background(train1);
+	    image(trainImage, 400, 400, 200, 100);
+	    player.update();
+	    player.show();
+	    square.show();
+	    displayCoordinates();
+	    checkInteractiveZones();
+	    fill(0);
+	    textSize(32);
+	    text("Score: " + score, 20, 40);
+	    text("High Score: " + highScore + " - How many times have you saved this train?", 0, 0);
+	    fill(50);
     textSize(20);
     textAlign(LEFT, TOP);
     text(gamePrompt, 20, 120, 960);
 
-    if (showChoices) {
-      // Draw +1 Score Button
-      fill(50);
-      rect(375, 550, 200, 50);
-      fill(255);
-      textSize(20);
-      textAlign(CENTER, CENTER);
-      text("Save the Train (+1)", 475, 575);
+            
+            // Highlight interaction zones if mouse is over them
+            for (let zone of interactionZones) {
+                if (mouseX > zone.x && mouseX < zone.x + zone.w && mouseY > zone.y && mouseY < zone.y + zone.h) {
+                    fill(255, 0, 0, 100);
+                    rect(zone.x, zone.y, zone.w, zone.h);
+                    // Display the name of the zone in the center of the screen
+                    fill(0);
+                    textSize(48);
+                    textAlign(CENTER, CENTER);
+                    text(zone.name, width / 2, height / 2);
+                }
+            }
 
-      // Draw +5 Score Button
-      fill(50);
-      rect(625, 550, 200, 50);
-      fill(255);
-      textSize(20);
-      textAlign(CENTER, CENTER);
-      text("Let it Derail (+5)", 725, 575);
-    }
-  }
+            // Display the current mouse coordinates at the mouse position
+            displayCoordinates();
+        }
+
+        function mousePressed() {
+            // Check if mouse is in any interaction zone
+            for (let zone of interactionZones) {
+                if (mouseX > zone.x && mouseX < zone.x + zone.w && mouseY > zone.y && mouseY < zone.y + zone.h) {
+                    console.log('You interacted with the ' + zone.name);
+                }
+            }
+        }
 
   function displayCoordinates() {
     fill(0);
@@ -103,26 +109,7 @@
       clickedMessage = "You clicked on the train! Choose an action:";
       showChoices = true;
     } else if (showChoices) {
-      // Check if +1 Score button is clicked
-      if (mouseX > 375 && mouseX < 575 && mouseY > 550 && mouseY < 600) {
-        score += 1;
-        highScore++;
-        clickedMessage = "You saved the train!";
-        resetGame();
-      }
-      // Check if +5 Score button is clicked
-      else if (mouseX > 625 && mouseX < 825 && mouseY > 550 && mouseY < 600) {
-        score += 5;
-        clickedMessage = "You let it derail...";
-        resetGame();
-      } else {
-        clickedMessage = "";
-        showChoices = false;
-      }
-    } else {
-      clickedMessage = "";
-    }
-  }
+
 
   function resetGame() {
     score = 0;
@@ -189,7 +176,13 @@
       noStroke();
       rect(this.x, this.y, this.size, this.size);
     }
-  }
+  
+          // Make sure the canvas re-centers if the window is resized
+        function windowResized() {
+            resizeCanvas(1000, 1000);
+            let cnv = createCanvas(1000, 1000);
+            cnv.position((windowWidth - width) / 2, (windowHeight - height) / 2);
+        }
 </script>
 
 </body>
