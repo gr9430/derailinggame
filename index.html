@@ -24,35 +24,53 @@
   <div id="canvas-container"></div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
   <script>
+    let gameState = 0;
+    let flickerTimer = 0;
+    let playerInput = '';
     let gameOver = false;
-    let decisionMade = false;
-    let outcomeMessage = "To believe in non-association is the coping mechanism, forevermore, as the bodies pile atop one another, and a quick glance begs questions of the perpetrator.";
+    let round = 1;
+    let clickedMessage = '';
+    let score = 0;
+    let highScores = [];
+    let interactedObjects = {
+      glowingHorizon: false,
+    };
     let trainImage;
-let gameOverImage;
+    let gameOverImage;
 
     function preload() {
-  trainImage = loadImage('train1.png');
-  gameOverImage = loadImage('train2.png'); // Load the game over image
-}
+      trainImage = loadImage('train1.png');
+      gameOverImage = loadImage('train2.png'); // Load the game over image
+    }
 
     function setup() {
-      let canvas = createCanvas(600, 400);
+      let canvas = createCanvas(1000, 1000);
       canvas.parent('canvas-container');
-      textSize(24);
+      textSize(32);
       textFont('monospace');
+      centerCanvas();
     }
 
     function draw() {
       if (!gameOver) {
-    image(trainImage, 0, 0, width, height); // Draw the main game background
-  } else {
-    image(gameOverImage, 0, 0, width, height); // Draw the game over background
-  } // Draw the background image
+        image(trainImage, 0, 0, width, height); // Draw the main game background
+      } else {
+        image(gameOverImage, 0, 0, width, height); // Draw the game over background
+      }
+
       fill(0);
+      textSize(32);
+      textFont('monospace');
 
       if (!gameOver) {
         // Display the scenario text
-        text("Stare onward and look at that view, take it all in and stare further into the distance, onto the other side of the horizon—yeah, right over there. Do you see it? The emergency brake of that metro car has been tampered with beyond function and it is derailing as we are forced to catch its spectacle. Here, you could stay in the viscid; there, you plummet into chaos.", 50, 100, width - 100, height - 150);
+        text(
+          "Stare onward and look at that view, take it all in and stare further into the distance, onto the other side of the horizon—yeah, right over there. Do you see it? The emergency brake of that metro car has been tampered with beyond function and it is derailing as we are forced to catch its spectacle. Here, you could stay in the viscid; there, you plummet into chaos.",
+          50,
+          100,
+          width - 100,
+          height - 150
+        );
 
         // Display choices
         if (!decisionMade) {
@@ -67,6 +85,9 @@ let gameOverImage;
         fill(255, 0, 0);
         text("Game Over. Press 'R' to Restart.", 50, 300);
       }
+
+      // Display the coordinates
+      displayCoordinates();
     }
 
     function keyPressed() {
@@ -84,6 +105,23 @@ let gameOverImage;
         decisionMade = false;
         outcomeMessage = '';
       }
+    }
+
+    function displayCoordinates() {
+      fill(255);
+      textSize(16);
+      text("X: " + mouseX + " Y: " + mouseY, 10, height - 10);
+    }
+
+    function windowResized() {
+      resizeCanvas(1000, 1000);
+      centerCanvas();
+    }
+
+    function centerCanvas() {
+      let x = (windowWidth - width) / 2;
+      let y = (windowHeight - height) / 2;
+      select('#canvas-container').position(x, y);
     }
   </script>
 </body>
