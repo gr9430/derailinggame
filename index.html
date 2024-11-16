@@ -27,6 +27,7 @@
   let score = 0;
   let trainImage;
   let clickedMessage = "";
+  let showChoices = false;
 
   function preload() {
     trainImage = loadImage('train1.png');
@@ -62,6 +63,20 @@
       fill(0);
       text(clickedMessage, 20, height - 60);
     }
+
+    if (showChoices) {
+      fill(50);
+      rect(400, 550, 150, 50);
+      fill(255);
+      textSize(20);
+      text("+1 Score", 425, 580);
+
+      fill(50);
+      rect(600, 550, 150, 50);
+      fill(255);
+      textSize(20);
+      text("+5 Score", 625, 580);
+    }
   }
 
   function displayCoordinates() {
@@ -82,16 +97,23 @@
   function mousePressed() {
     // Check if the train image is clicked
     if (mouseX > 400 && mouseX < 600 && mouseY > 400 && mouseY < 500) {
-      clickedMessage = "You clicked on the train! Choose an action: +1 Score or +5 Score";
-      let choice = prompt("Type '1' to add 1 point or '5' to add 5 points to your score:");
-      if (choice === '1') {
+      clickedMessage = "You clicked on the train! Choose an action:";
+      showChoices = true;
+    } else if (showChoices) {
+      // Check if +1 Score button is clicked
+      if (mouseX > 400 && mouseX < 550 && mouseY > 550 && mouseY < 600) {
         score += 1;
         clickedMessage = "You chose to add 1 point!";
-      } else if (choice === '5') {
+        showChoices = false;
+      }
+      // Check if +5 Score button is clicked
+      else if (mouseX > 600 && mouseX < 750 && mouseY > 550 && mouseY < 600) {
         score += 5;
         clickedMessage = "You chose to add 5 points!";
+        showChoices = false;
       } else {
-        clickedMessage = "No valid choice made.";
+        clickedMessage = "";
+        showChoices = false;
       }
     } else {
       clickedMessage = "";
