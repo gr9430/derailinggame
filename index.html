@@ -25,11 +25,11 @@
   let player;
   let square;
   let score = 0;
+  let highScore = 0;
   let trainImage;
   let clickedMessage = "";
   let showChoices = false;
   let gamePrompt = "Stare onward and look at that view, take it all in and stare further into the distance, onto the other side of the horizon—yeah, right over there. Do you see it? The emergency brake of that metro car has been tampered with beyond function and it is derailing as we are forced to catch its spectacle. Here, you could stay in the viscid; there, you plummet into chaos.";
-  let gameOverPrompt = "To believe in non-association is the coping mechanism, forevermore, as the bodies pile atop one another, and a quick glance begs questions of the perpetrator.";
 
   function preload() {
     trainImage = loadImage('train1.png');
@@ -51,33 +51,15 @@
     displayCoordinates();
     checkInteractiveZones();
 
-    if (player.collects(square)) {
-      score++;
-      square.respawn();
-    }
-
     fill(0);
     textSize(32);
     text("Score: " + score, 20, 40);
-
-    if (clickedMessage) {
-      textSize(24);
-      fill(0);
-      text(clickedMessage, 20, height - 60);
-    }
+    text("High Score: " + highScore + " - How many times have you saved this train?", 20, 80);
 
     fill(50);
     textSize(20);
     textAlign(LEFT, TOP);
-    text(gamePrompt, 20, 80, 960);
-
-    if (score > 100) {
-      textAlign(CENTER, CENTER);
-      textSize(28);
-      fill(150, 0, 0);
-      text(gameOverPrompt, width / 2, height / 2, 800);
-      noLoop();
-    }
+    text(gamePrompt, 20, 120, 960);
 
     if (showChoices) {
       // Draw +1 Score Button
@@ -86,7 +68,7 @@
       fill(255);
       textSize(20);
       textAlign(CENTER, CENTER);
-      text("+1 Score", 475, 575);
+      text("Save the Train (+1)", 475, 575);
 
       // Draw +5 Score Button
       fill(50);
@@ -94,7 +76,7 @@
       fill(255);
       textSize(20);
       textAlign(CENTER, CENTER);
-      text("+5 Score", 725, 575);
+      text("Let it Derail (+5)", 725, 575);
     }
   }
 
@@ -124,14 +106,15 @@
       // Check if +1 Score button is clicked
       if (mouseX > 375 && mouseX < 575 && mouseY > 550 && mouseY < 600) {
         score += 1;
-        clickedMessage = "You chose to add 1 point!";
-        showChoices = false;
+        highScore++;
+        clickedMessage = "You saved the train!";
+        resetGame();
       }
       // Check if +5 Score button is clicked
       else if (mouseX > 625 && mouseX < 825 && mouseY > 550 && mouseY < 600) {
         score += 5;
-        clickedMessage = "You chose to add 5 points!";
-        showChoices = false;
+        clickedMessage = "You let it derail...";
+        resetGame();
       } else {
         clickedMessage = "";
         showChoices = false;
@@ -139,6 +122,15 @@
     } else {
       clickedMessage = "";
     }
+  }
+
+  function resetGame() {
+    score = 0;
+    showChoices = false;
+    clickedMessage = "";
+    player = new Player();
+    square = new Square();
+    loop();
   }
 
   class Player {
